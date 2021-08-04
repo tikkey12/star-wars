@@ -1,0 +1,19 @@
+.myInput {
+    margin-top: 5%;
+    border-radius: 10px;
+    background-color: darkgray;
+    transition: 0.3s all;
+}
+
+.myInput:hover {
+    background-color: whitesmoke;
+}
+
+.myInput input {
+    padding: 10px 16px;
+    height: calc(12px + 2vmin);
+    font-size: calc(10px + 2vmin);
+    border: none;
+    border-radius: 10px;
+    background-color: transparent;
+}

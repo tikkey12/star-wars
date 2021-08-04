@@ -1,0 +1,24 @@
+.parent {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.myInput {
+  margin-top: 5%;
+}
+.myTable {
+  margin-top: 7%;
+  width: 60%;
+  border: 1px solid antiquewhite;
+}
+
+tr {
+  height: 10%;
+}
+
+th {
+  width: 20%;
+}
