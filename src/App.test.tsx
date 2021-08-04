@@ -23,12 +23,7 @@ const person = {"results": [
     eye_color: "blue",
   },
 ]};
-// @ts-ignore
-global.fetch = jest.fn(() =>
-    Promise.resolve({
-      json: () => Promise.resolve(persons),
-    })
-);
+
 //configure({adapter: new Adapter()});
 describe("App test", () => {
   beforeEach(() => {
