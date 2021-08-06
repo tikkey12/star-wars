@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import './App.css';
 import tableStyle from './Table.module.css'
 import inputStyle from './Input.module.css'
-import { ControlFunctions } from 'use-debounce/lib/useDebouncedCallback';
+import tableNavigateStyle from './TableNavigate.module.css'
 import useDebounce from './use-debounce'
 import fetch from "node-fetch";
 
@@ -12,80 +12,77 @@ function App() {
     const [searchTerm, setSearchTerm] = useState('');
     // Состояние и сеттер состояния для результатов поиска
     const [results, setResults] = useState([]);
-    // Состояние для статуса поиска (есть ли ожидающий запрос API)
-    const [isSearching, setIsSearching] = useState(false);
-    // Состояние для статуса загрузки (пока не получили все данные)
+    // Состояние для статуса загрузки
     const [isLoading, setIsLoading] = useState(true);
-    const [isSwitchData, setIsSwitchData] = useState(false);
+    // Номер страницы поиска
+    const [pageNum, setPageNum] = useState(1);
+    // Номер последней страницы в api
+    const [maxPageNum, setMaxPageNum] = useState(1);
 
-    const api: string = 'https://swapi.dev/api/people'
+    const api: string = 'https://swapi.dev/api/people/?'
 
     const debouncedSearchTerm = useDebounce(searchTerm, 1000);
+    const debouncedSearchPage = useDebounce(pageNum, 1000);
 
     useEffect( () => {
-            if (debouncedSearchTerm) {
-                setIsSwitchData(true);
-                setIsSearching(true);
-                setDataToTable(api, debouncedSearchTerm).then(results => {
-                    setIsSearching(false);
-                    setResults(results);
-                });
-            } else {
-                setIsLoading(true);
-                setDataToTable(api).then(results => {
-                    setIsLoading(false);
-                    setResults(results);
-                    setIsSwitchData(false);
-                });
+            function setDataToTable(api: string, search?: string, page?: number) {
+                if (search) {
+                    return getData(api + `search=${search}`);
+                } else {
+                    return getData(api + `page=${page}`);
+                }
+
             }
+            setIsLoading(true);
+            setDataToTable(api, debouncedSearchTerm, debouncedSearchPage).then(results => {
+                setIsLoading(false);
+                setResults(results);
+            });
         },
-        [debouncedSearchTerm]
+        [debouncedSearchTerm, debouncedSearchPage]
     );
 
-    function searchData(url: string): Promise<any> {
-        return fetch(url)
-            .then(res => res.json())
-            .then(res => {
-                if(res.results.length)
-                    return res.results;
-                else
-                    return [{name: 'There is', gender: 'no such', mass: 'person in', eye_color: 'galaxy'}];
-            })
-            .catch(error => alert(error.message));
+    function getData(url: string): Promise<any> {
+        const persons = {
+            "count": 82,
+            "results": [
+                {
+                    name: "Luke Skywalker",
+                    mass: "77",
+                    gender: "male",
+                    eye_color: "blue",
+                },
+            ]};
+
+        let myPromise = new Promise<any>((resolve, reject) => {
+            resolve(persons);
+        });
+
+        return myPromise.then(res => {setMaxPageNum(Math.ceil(Number(res.count)/10)); return res.results});
+        // return fetch(url)
+        //     .then(res => res.json())
+        //     .then(res => {
+        //         if(res.results.length)
+        //             return res.results;
+        //         else
+        //             return [{name: 'There is', gender: 'no such', mass: 'person in', eye_color: 'galaxy'}];
+        //     })
+        //     .catch(error => alert(error.message));
     }
 
-    let persons: any[] = [];
-    function getData(url:string): Promise<any[] | unknown[] | void> {
-        return fetch(url).then(res =>
-            res.json()
-        ).then(function(res) {
-            if (res.next) {
-                persons.push(res.results);
-                return getData(res.next);
-            } else {
-                persons.push(res.results);
-                return Promise.all(persons.map(person => person));
-            }
-        }).catch(error => alert(error.message));
+    function checkInputPage(value: string) {
+        if (Number(value) > maxPageNum)
+            setPageNum(maxPageNum);
+        else if (Number(value) < 1)
+            setPageNum(1);
+        else setPageNum(Number(value));
     }
-
-    function setDataToTable(api: string, search?: [string, ControlFunctions]) {
-        if (search) {
-            const url: string = api + `/?search=${search}`
-            return searchData(url);
-        } else {
-            return getData(api);
-        }
-
-    }
-
     return (
         <div className="parent">
             <div className={inputStyle.myInput}>
                 <input placeholder="Search by name"
                        onChange={e => setSearchTerm(e.target.value)}/>
             </div>
-            {isSearching && <div>Searching ...</div>}
             {isLoading && <div>Loading ...</div>}
             <div className={tableStyle.myTable}>
                 <table>
@@ -98,16 +95,7 @@ function App() {
                     </tr>
                     </thead>
                     <tbody>
-                    {!isSwitchData && results.map((result: any) => (
-                        result.map((res: any) => (
-                            <tr key={res.name}>
-                                <td>{res.name}</td>
-                                <td>{res.gender}</td>
-                                <td>{res.mass}</td>
-                                <td>{res.eye_color}</td>
-                            </tr>
-                        ))))}
-                    {isSwitchData && results.map((res: any) => (
+                    {results.map((res: any) => (
                         <tr key={res.name}>
                             <td>{res.name}</td>
                             <td>{res.gender}</td>
@@ -117,6 +105,13 @@ function App() {
                     ))}
                     </tbody>
                 </table>
+            </div>
+            <div className={tableNavigateStyle.myTableNavigate}>
+                <button onClick={() => setPageNum(pageNum - 1)} disabled={pageNum === 1}>Previous</button>
+                <button onClick={() => setPageNum(pageNum + 1)} disabled={pageNum === maxPageNum}>Next</button>
+                <input placeholder="Search by name"
+                       value={pageNum}
+                       onChange={e => checkInputPage(e.target.value.replace(/\D/, ''))}/>
             </div>
         </div>
     );

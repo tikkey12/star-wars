@@ -1,0 +1,34 @@
+.myTableNavigate {
+    width: 30%;
+    margin-top: 2%;
+    display: block;
+}
+
+.myTableNavigate input:hover {
+    background-color: whitesmoke;
+}
+
+.myTableNavigate input {
+    margin-left: 15%;
+    padding-top: 4px;
+    height: 40px;
+    text-align: center;
+    font-size: calc(6px + 2vmin);
+    width: 32%;
+    border-radius: 6px;
+    border: none;
+    background-color: darkgray;
+}
+
+.myTableNavigate button:hover:enabled {
+    background-color: whitesmoke;
+}
+
+.myTableNavigate button {
+    margin-right: 5px;
+    border: none;
+    height: 43px;
+    background-color: darkgray;
+    font-size: calc(6px + 2vmin);
+    border-radius: 6px;
+}
