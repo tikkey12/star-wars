@@ -43,31 +43,32 @@ function App() {
     );
 
     function getData(url: string): Promise<any> {
-        const persons = {
-            "count": 82,
-            "results": [
-                {
-                    name: "Luke Skywalker",
-                    mass: "77",
-                    gender: "male",
-                    eye_color: "blue",
-                },
-            ]};
-
-        let myPromise = new Promise<any>((resolve, reject) => {
-            resolve(persons);
-        });
-
-        return myPromise.then(res => {setMaxPageNum(Math.ceil(Number(res.count)/10)); return res.results});
-        // return fetch(url)
-        //     .then(res => res.json())
-        //     .then(res => {
-        //         if(res.results.length)
-        //             return res.results;
-        //         else
-        //             return [{name: 'There is', gender: 'no such', mass: 'person in', eye_color: 'galaxy'}];
-        //     })
-        //     .catch(error => alert(error.message));
+        // const persons = {
+        //     "count": 82,
+        //     "results": [
+        //         {
+        //             name: "Luke Skywalker",
+        //             mass: "77",
+        //             gender: "male",
+        //             eye_color: "blue",
+        //         },
+        //     ]};
+        //
+        // let myPromise = new Promise<any>((resolve, reject) => {
+        //     resolve(persons);
+        // });
+        //
+        // return myPromise.then(res => {setMaxPageNum(Math.ceil(Number(res.count)/10)); return res.results});
+        return fetch(url)
+            .then(res => res.json())
+            .then(res => {
+                setMaxPageNum(Math.ceil(Number(res.count)/10));
+                if(res.results.length)
+                    return res.results;
+                else
+                    return [{name: 'There is', gender: 'no such', mass: 'person in', eye_color: 'galaxy'}];
+            })
+            .catch(error => alert(error.message));
     }
 
     function checkInputPage(value: string) {
