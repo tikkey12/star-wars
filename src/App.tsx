@@ -4,7 +4,6 @@ import tableStyle from './Table.module.css'
 import inputStyle from './Input.module.css'
 import tableNavigateStyle from './TableNavigate.module.css'
 import useDebounce from './use-debounce'
-import fetch from "node-fetch";
 
 function App() {
 
@@ -78,6 +77,7 @@ function App() {
             setPageNum(1);
         else setPageNum(Number(value));
     }
+
     return (
         <div className="parent">
             <div className={inputStyle.myInput}>
@@ -110,8 +110,9 @@ function App() {
             <div className={tableNavigateStyle.myTableNavigate}>
                 <button onClick={() => setPageNum(pageNum - 1)} disabled={pageNum === 1}>Previous</button>
                 <button onClick={() => setPageNum(pageNum + 1)} disabled={pageNum === maxPageNum}>Next</button>
-                <input placeholder="Search by name"
+                <input placeholder="Search by page"
                        value={pageNum}
+                       onClick={e => e.currentTarget.select()}
                        onChange={e => checkInputPage(e.target.value.replace(/\D/, ''))}/>
             </div>
         </div>

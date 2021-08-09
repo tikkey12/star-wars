@@ -1,19 +1,9 @@
-import {fireEvent, render, screen, waitFor} from '@testing-library/react';
+import {act, render, screen, waitFor} from '@testing-library/react';
 import App from './App';
 import fetchMock from "fetch-mock";
+import userEvent from "@testing-library/user-event";
 
-const url = 'https://swapi.dev/api/people';
-
-const persons = {
-  "next": null,
-  "results": [
-    {
-      name: "Luke Skywalker",
-      mass: "77",
-      gender: "male",
-      eye_color: "blue",
-    },
-  ]};
+const url = 'https://swapi.dev/api/people/?';
 
 const person = {"results": [
   {
@@ -24,44 +14,57 @@ const person = {"results": [
   },
 ]};
 
-//configure({adapter: new Adapter()});
 describe("App test", () => {
   beforeEach(() => {
-    fetchMock.get(url, {
+    jest.useFakeTimers();
+    fetchMock.get(url + `page=1`, {
       status: 200,
-      body: persons,
+      body: person,
     });
-    fetchMock.get(url + `/?search=Luke`, {
+    fetchMock.get(url + `page=3`, {
+      status: 200,
+      body: person,
+    });
+    fetchMock.get(url + `search=Luke`, {
       status: 200,
       body: person,
     });
   })
   it("testing fetch", async () => {
     render(<App/>);
-    const input = screen.getByRole('textbox');
+    const inputByName = screen.getByPlaceholderText('Search by name');
+    const inputByPage = screen.getByPlaceholderText('Search by page');
 
     await waitFor(() => {
-      expect(fetchMock.lastUrl()).toEqual(url);
+      expect(fetchMock.lastUrl()).toEqual(url + `page=${inputByPage.value}`);
       expect(fetchMock.calls().length).toEqual(1);
-      expect(fetchMock.done()).toEqual(true);
     });
 
-    fireEvent.change(input, {
-      target: {value: ''},
-    });
+    await act(async () => {
+      await userEvent.type(inputByPage, '3');
+      jest.advanceTimersByTime(1000);
+    })
     await waitFor(() => {
-      expect(fetchMock.lastUrl()).toEqual(url + `/?search=${input.value}`);
+      expect(fetchMock.lastUrl()).toEqual(url + `page=${inputByPage.value}`);
       expect(fetchMock.calls().length).toEqual(2);
-      expect(fetchMock.done()).toEqual(true);
     });
 
-    fireEvent.change(input, {
-      target: {value: 'Luke'},
-    });
+    await act(async () => {
+      await userEvent.type(inputByName, 'Luke');
+      jest.advanceTimersByTime(1000);
+    })
     await waitFor(() => {
-      expect(fetchMock.lastUrl()).toEqual(url + `/?search=${input.value}`);
+      expect(fetchMock.lastUrl()).toEqual(url + `search=${inputByName.value}`);
       expect(fetchMock.calls().length).toEqual(3);
-      expect(fetchMock.done()).toEqual(true);
+    });
+
+    await act(async () => {
+      await userEvent.type(inputByPage, '1');
+      jest.advanceTimersByTime(1000);
+    })
+    await waitFor(() => {
+      expect(fetchMock.lastUrl()).toEqual(url + `search=${inputByName.value}`);
+      expect(fetchMock.calls().length).toEqual(4);
     });
   })
 })
